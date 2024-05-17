@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Listas de Tareas</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <style>
+    /* Estilos personalizados */
+    body {
+      background-color: #D3FFF6;
+    }
+    .lista-card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      background-color: #FFA9A9;
+    }
+    .lista-card .card-body {
+      padding: 20px;
+    }
+    .lista-card .card-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .lista-card .btn-primary {
+      background-color: #fd7e14;
+      border-color: #fd7e14;
+    }
+    .lista-card .btn-primary:hover {
+      background-color: #e65a00;
+      border-color: #e65a00;
+    }
+    .tareas-col {
+      background-color: #FFA9A9;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+    .tareas-col h2 {
+      font-size: 1.5rem;
+    }
+    .modal-content {
+      border-radius: 10px;
+      box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+      background-color: #f8f9fa;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-4 overflow-auto mt-4">
+        <h1>Listas de Tareas</h1>
+        <button type="button" class="btn btn-primary my-3" data-toggle="modal" data-target="#nuevaListaModal">
+          Añadir una Lista de Tareas
+        </button>
+        <!-- Contenedor de mensajes flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div id="flash-messages">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <div class="list-group">
+          {% for lista in listas_tareas %}
+          <div class="card mb-3 lista-card">
+            <div class="card-body">
+              <h2 class="card-title">{{ lista[1] }}</h2>
+              <a href="{{ url_for('mostrar_tareas', lista_id=lista[0]) }}" class="btn btn-primary">Ver tareas</a>
+            </div>
+          </div>
+          {% else %}
+          <p class="text-muted">No hay listas de tareas.</p>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-7 overflow-auto mt-4 tareas-col">
+        <h1>Tareas</h1>
+        <h2 class="mt-4">Aquí aparecerán tus tareas. Haz click en alguna lista o crea una nueva para empezar.</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para añadir una nueva lista -->
+  <div class="modal fade" id="nuevaListaModal" tabindex="-1" role="dialog" aria-labelledby="nuevaListaModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="nuevaListaModalLabel">Nueva Lista de Tareas</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form method="POST" action="{{ url_for('nueva_lista') }}">
+            <div class="form-group">
+              <label for="nombre-lista">Nombre de la lista</label>
+              <input type="text" class="form-control" id="nombre-lista" name="nombre_lista">
+            </div>
+            <button type="submit" class="btn btn-primary">Crear</button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      setTimeout(function() {
+        $('#flash-messages .alert').alert('close');
+      }, 5000); // 5000 milisegundos = 5 segundos
+    });
+  </script>
+</body>
+</html>

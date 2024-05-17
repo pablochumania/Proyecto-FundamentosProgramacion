@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tareas</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        /* Estilos personalizados */
+        body {
+            background-color: #D3FFF6;
+        }
+        .tareas-col {
+            background-color: #FFA9A9;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .tareas-col h1 {
+            font-size: 2rem;
+        }
+        .tareas-col .btn-primary {
+            background-color: #ff6b6b;
+            border-color: #ff6b6b;
+            margin-top: 20px;
+        }
+        .tareas-col .btn-primary:hover {
+            background-color: #f93e3e;
+            border-color: #f93e3e;
+        }
+        .tareas-col .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            background-color: #f8f9fa;
+        }
+        .tareas-col .card-body {
+            padding: 20px;
+        }
+        .tareas-col .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .tareas-col .card-text {
+            color: #555;
+        }
+        .modal-content {
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+            background-color: #f8f9fa;
+        }
+        .btn-info {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+        }
+        .btn-info:hover {
+            background-color: #45a049; /* Green */
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-4 overflow-auto mt-4">
+                <h2 class="mt-4">{{ nombre_lista }}</h2>
+                <a href="{{ url_for('index') }}" class="btn btn-primary mb-4">Regresar a las listas</a>
+                <!-- Aquí se mostrarán las listas de tareas -->
+            </div>
+            <div class="col-md-7 overflow-auto mt-4 tareas-col">
+                <h1 class="mt-4">Tareas</h1>
+                <button type="button" class="btn btn-primary mt-4" data-toggle="modal" data-target="#nuevaTareaModal">
+                    Añadir una Tarea
+                </button>
+                <!-- Contenedor de mensajes flash -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div id="flash-messages">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                {% for tarea in tareas %}
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h2 class="card-title">{{ tarea[2] }}</h2>
+                            <p class="card-text">{{ tarea[3] }}</p>
+                            <p class="card-text">Fecha de vencimiento: {{ tarea[5] }}</p>
+                            <p class="card-text">Estado: {{ 'Completada' if tarea[6] == '1' else 'Pendiente' }}</p>
+                            <a href="#" class="btn btn-info" data-toggle="modal" data-target="#tareaModal{{ tarea[0] }}">
+                                Ver detalles
+                            </a>
+                            <form method="POST" action="{{ url_for('eliminar_tarea', tarea_id=tarea[0], lista_id=lista_id) }}" onsubmit="return confirmarEliminacion()">
+                                <input type="submit" value="Eliminar tarea" class="btn btn-danger">
+                            </form>
+                            <form method="POST" action="{{ url_for('cambiar_estado', tarea_id=tarea[0], lista_id=lista_id) }}" onsubmit="return confirmarCambioEstado()">
+                                <input type="submit" value="Cambiar estado" class="btn btn-primary">
+                            </form>                            
+
+                            <!-- Modal para mostrar los detalles de la tarea -->
+                            <div class="modal fade" id="tareaModal{{ tarea[0] }}" tabindex="-1" role="dialog" aria-labelledby="tareaModalLabel{{ tarea[0] }}" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="tareaModalLabel{{ tarea[0] }}">Detalles de la Tarea</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">×</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p><strong>Nombre de la tarea:</strong> {{ tarea[2] }}</p>
+                                            <p><strong>Descripción:</strong> {{ tarea[3] }}</p>
+                                            <p><strong>Fecha de vencimiento:</strong> {{ tarea[5] }}</p>
+                                            <p><strong>Estado:</strong> {{ 'Completada' if tarea[6] == 1 else 'Pendiente' }}</p>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para añadir una nueva tarea -->
+    <div class="modal fade" id="nuevaTareaModal" tabindex="-1" role="dialog" aria-labelledby="nuevaTareaModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nuevaTareaModalLabel">Nueva Tarea</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{{ url_for('nueva_tarea', lista_id=lista_id) }}">
+                        <input type="hidden" name="nombre_lista" value="{{ nombre_lista }}">
+                        <div class="form-group">
+                            <input type="text" name="nombre_tarea" placeholder="Nombre de la nueva tarea" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <textarea name="descripcion" placeholder="Descripción de la nueva tarea" class="form-control"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <input type="date" name="fecha_vencimiento" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <select name="estado" class="form-control">
+                                <option value="0">Pendiente</option>
+                                <option value="1">Completada</option>
+                            </select>
+                        </div>
+                        <input type="submit" value="Crear nueva tarea" class="btn btn-success">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+        function confirmarEliminacion() {
+            return confirm('¿Estás seguro de que quieres eliminar esta tarea?');
+        }
+        function confirmarCambioEstado() {
+            return confirm('¿Estás seguro de que quieres cambiar el estado de esta tarea?');
+        }
+
+        $(document).ready(function() {
+            setTimeout(function() {
+                $('#flash-messages .alert').alert('close');
+            }, 5000); // 5000 milisegundos = 5 segundos
+        });
+    </script>
+</body>
+</html>
